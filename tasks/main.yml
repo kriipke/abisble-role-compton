@@ -1,0 +1,22 @@
+---
+- name: INSTALL compton
+  package:
+    name: compton
+    state: latest
+
+- name: REGISTER $XDG_CONFIG_DIRS -> xdg_config_dirs
+  shell: echo "${XDG_CONFIG_DIRS%%:*}"
+  changed_when: False
+  register: xdg_config_dirs
+
+- name: TEMPLATE $XDG_CONFIG_DIRS/compton.conf
+  file:
+    src: compton.conf
+    dest: "{{ xdg_config_dirs.stdout }}/compton.conf"
+  when: xdg_config_dirs.stdout | length > 0
+
+- name: TEMPLATE /etc/xdg/compton.conf
+  template:
+    src: compton.conf.j2
+    dest: "/etc/xdg/compton.conf"
+  when: xdg_config_dirs.stdout | length == 0
